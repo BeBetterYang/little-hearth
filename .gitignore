@@ -1,0 +1,17 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+server/data/db.json
+uploads/*
+!uploads/.gitkeep
+!uploads/dishes/
+!uploads/dishes/.gitkeep
+!uploads/orders/
+!uploads/orders/.gitkeep
+!uploads/home/
+!uploads/home/.gitkeep

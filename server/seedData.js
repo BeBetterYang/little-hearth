@@ -1,0 +1,75 @@
+export const seedData = {
+  homeSettings: {
+    greeting: '早上好，我的朋友',
+    titlePrefix: '准备好享受温馨的',
+    titleHighlight: '家庭聚餐',
+    titleSuffix: '了吗？',
+    heroImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAlapxTrauiMum6FybSq3PlFlSv8MN88I7aY70B2URDnkslF9gTH52MMhwUSGE3m60J9Fsjjb1tECWOdHbFiStGzNeaVjuQqexq4_7_txBWtodcUJ0HqOZrGK49uBuc9dxcMTGV1aPcD3wDP2TVRbCHG87NwWVRb90UJ-PRTbha2YreATjZeT5UtqI3OFfhvApKtA7u3_XBIh6N7YqXAVWUSGD47VX5JqvZjw37wyr22eZmrVctYn5iWeDXSbXteAH9599vvksur2w',
+  },
+  dishes: [
+    {
+      id: '1',
+      name: '家传红烧肉',
+      tags: ['荤菜', '香辣'],
+      desc: '选用五花肉，秘制调料，肥而不腻。',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_6fo291wRVr-XI5fpl84tViAncbPvwyzwncatktsAIct2nsUEuf5m0QJSY4_r0e5Zt71mwJvMbx-EUMHTK_XlzZ46V4Ul7eXy7_afePhejFl9YlBG37cXoVW_FA1gdYWSjBSGQPyMgctCJ4CrWEHnJRknS8p4Uzfecn35a9SV80hoWVg3Trgi4-lqYyd3ydKi5KF36zEnFWp71sps4eduNFns0lLPHLTjR0wewfnj4x0jDOSqVVY9OSO4tRqKD8uRsBydWi9nlZ4',
+      ready: true,
+    },
+    {
+      id: '2',
+      name: '清蒸鲈鱼',
+      tags: ['荤菜', '清淡'],
+      desc: '新鲜鲈鱼，清蒸保留原汁原味。',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAgaeCvhoB9TH0i6GPqx2EgDj-c_DJ4itKX3iCMQWffRxBUEKmBRHmUyu-7ZoGYF2ToMP2xyf357NRPCuya7CKOQE66eP-_9G76IRt2C8bPUnsft7n6ER0M8FMKsTZuJvTXclRc-LGPGwnrWgi9239b7IkT4cDNdfpOYFLop92cF0Sjp4lG3q11Zxc5IC9fPaUsFoTpTGHmUd1z1GQBu4Lg-DTOEicfsifg7uJTvJzcinxPt9cglgzzZ9UBHYdhQy2ER6Ienr8mdYk',
+      ready: false,
+    },
+    {
+      id: '3',
+      name: '蒜蓉青菜',
+      tags: ['素菜', '清胃'],
+      desc: '时令蔬菜，蒜蓉爆香。',
+      img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBr_9GHlrpCh4Ln-8aarbRj55CuYOLzdLkX4qTXB_oT9Stblg089W_KSHWzJLmeoDaFBmoHN49X98OOKh_owqNNwgVBXsz4Khmwl2cH7f7RRv4eq3pHkDms3iU7lPH-qO8i_odLxwWJ5Hksw-iNccNzD4q6-IFsEPOxznz8RPF3bkZpCuvEnq6BnKnqawNwe5jV-d2pCiXfDbP8CoiVks5uUSWzxzPe6ELfRXVe8BBZHqz32kwGP88CO_GRnKhsCSrY-J9WCu2fp5E',
+      ready: true,
+    },
+  ],
+  orders: [
+    {
+      id: 'seed-1',
+      date: '2026年3月21日 · 晚餐',
+      items: '红烧牛肉 等3件菜品',
+      note: '上个月的今天，全家人聚在一起真开心。',
+      status: '已完成',
+      images: [
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuBhjT3ZPAowL00liIenzpefm_sqXa0ccwgoCNQq6rWYu3iBPgSu5PxHtsJShwS3Swuodi9xAP46iLnzYT0nhxZgsUbXAjvLD5NAgz6CH6_6AOD-mkEZlWlN64E0RwAjBB1lS7u5er8Og5RmJzvczJmaQgk9MOX6fru4YbT3oqogJSq-JGJUZg0fVOmSrN7dVm1v-O1vlF6zlCp0_0WH9zgxw3ThVSZQy7azrmC9UPKXiiBsYMFNX8ZaO27l8-nc5HxS8k52G2MFRMk',
+      ],
+      extra: 2,
+      dishIds: ['1', '2', '3'],
+    },
+    {
+      id: 'seed-2',
+      date: '2023年11月24日 · 晚餐',
+      items: '外婆红烧肉 等5件菜品',
+      note: '那天的米饭特别香，就像家里的味道。',
+      status: '已完成',
+      images: [
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuBKiP6NBZQq98k6wRq-59uG-RfPmXiEhwCqYBrO-z_7Epfo_ej5-npQ6gMf7I08lgmlLwCzy6oRAS0-eoOqeOgz3V4cYga1RIMnM3_wNwB_Ehweh_Qauglq3uNT6fS7EgZZc8hPGPR0u1ZjWUudUh5NoVxg-5LgeLvZ_EFooXh4ZtgHIDr5hYJ_0ALlc-k4PF4SS63vYBI1g1htid2YAvgqfUOv9tJxCZwvGk-HKwebWWUmgIQMlEYZ8lLTolKQvwk98vS-az5b2Ds',
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuDFv1zr18KrpZO3ook8B1oKQwN_C3FZ2x3WONBfVpMBHppTc3ZIaDPjRfTT8o6c2-5eD159jQUUaQZNPwMS4EGibmz1hU4Ps0IkxMEpMG4hstD6zaVglFaEeVux0RDPkJyvu_Xrj_AjAy1yi3G2CnM5JQUm4A7DK3FAIvw7aOJr_8mF7QhpYOUBbmxtrZeyiC0Q9V_VGqFAqcbcb1wWLfRrHJuhjPOFK8qrrS2vbtFvqO7PFPleGclvz4J_5LrmTEwXFVzKYxRq3A',
+      ],
+      extra: 3,
+      dishIds: ['1'],
+    },
+    {
+      id: 'seed-3',
+      date: '2023年11月20日 · 午餐',
+      items: '手工灌汤包 等2件菜品',
+      note: '汤汁很足，记得趁热吃。',
+      status: '已完成',
+      images: [
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuAzELZPhuqj2jbH7zxHApoFbWDnI-EtGStP7sPrfb0IFg8lKMyGprwPe2ye1XQGjwxwjHK61OY9GfJ9ceNlQLtwdkrwA7AGgXIMBAV5BuKbxJKW6EJIVP4HYe5TUIk3xX-rT4fFuoDxmPtYwlUyhQ2wfZJCoglTlz1juz8louByg3SNNbUHHem8koCSTM3OXL_7m6N_tzOkUqo-DMBTfcUKFIiNVRlVKlT4T3dWohgV_8ucvqC7kd4mlCBCbJmu6bRf_dhMzDwWSRI',
+      ],
+      extra: 1,
+      dishIds: ['3'],
+    },
+  ],
+  todayMenuIds: ['1', '2', '3'],
+};

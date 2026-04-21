@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #FFFBF9;
+  --color-surface: #FFFFFF;
+  --color-surface-container: #FEF2F2;
+  --color-surface-container-low: #FFFBF9;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-high: #FFEDD5;
+  --color-surface-container-highest: #FED7AA;
+  
+  --color-primary: #EA580C;
+  --color-primary-container: #FFEDD5;
+  --color-on-primary: #FFFFFF;
+  
+  --color-secondary: #059669;
+  --color-secondary-container: #D1FAE5;
+  --color-on-secondary-container: #064E3B;
+  
+  --color-on-surface: #271300;
+  --color-on-surface-variant: #78350F;
+  --color-outline-variant: #FDE6D2;
+  --color-error: #DC2626;
+
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-body antialiased selection:bg-primary/20;
+  }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(253, 230, 210, 0.5);
+}
+
+.custom-shadow {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    line-height: 1.5;
+  }
+}
