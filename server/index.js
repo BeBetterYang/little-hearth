@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { del, get, put } from '@vercel/blob';
 import { seedData } from './seedData.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,6 +14,13 @@ const dataDir = path.join(__dirname, 'data');
 const dbPath = path.join(dataDir, 'db.json');
 const uploadsDir = path.join(rootDir, 'uploads');
 const allowedUploadModules = new Set(['dishes', 'orders', 'home']);
+const isVercelRuntime = process.env.VERCEL === '1';
+const useBlobStorage =
+  process.env.STORAGE_DRIVER === 'blob' ||
+  (isVercelRuntime && Boolean(process.env.BLOB_READ_WRITE_TOKEN));
+const blobDbPath = 'little-hearth/data/db.json';
+const blobUploadPrefix = 'little-hearth/uploads';
+let memoryDb;
 
 const app = express();
 const port = Number(process.env.API_PORT || 5174);
@@ -21,7 +29,15 @@ app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use('/uploads', express.static(uploadsDir));
 
+function cloneSeedData() {
+  return JSON.parse(JSON.stringify(seedData));
+}
+
 async function ensureRuntimeFiles() {
+  if (isVercelRuntime || useBlobStorage) {
+    return;
+  }
+
   await fs.mkdir(dataDir, { recursive: true });
   await fs.mkdir(path.join(uploadsDir, 'dishes'), { recursive: true });
   await fs.mkdir(path.join(uploadsDir, 'orders'), { recursive: true });
@@ -35,9 +51,36 @@ async function ensureRuntimeFiles() {
 }
 
 async function readDb() {
+  if (useBlobStorage) {
+    const blob = await get(blobDbPath, { access: 'private', useCache: false }).catch(() => null);
+
+    if (!blob?.stream) {
+      const initialData = cloneSeedData();
+      await writeDb(initialData);
+      return initialData;
+    }
+
+    const content = await new Response(blob.stream).text();
+    const data = JSON.parse(content);
+    return await normalizeDb(data);
+  }
+
+  if (isVercelRuntime) {
+    if (!memoryDb) {
+      memoryDb = cloneSeedData();
+    }
+
+    memoryDb = await normalizeDb(memoryDb);
+    return memoryDb;
+  }
+
   await ensureRuntimeFiles();
   const content = await fs.readFile(dbPath, 'utf8');
   const data = JSON.parse(content);
+  return await normalizeDb(data);
+}
+
+async function normalizeDb(data) {
   let changed = false;
 
   if (!data.homeSettings) {
@@ -68,6 +111,20 @@ async function readDb() {
 }
 
 async function writeDb(data) {
+  if (useBlobStorage) {
+    await put(blobDbPath, JSON.stringify(data, null, 2), {
+      access: 'private',
+      allowOverwrite: true,
+      contentType: 'application/json',
+    });
+    return;
+  }
+
+  if (isVercelRuntime) {
+    memoryDb = data;
+    return;
+  }
+
   await fs.mkdir(dataDir, { recursive: true });
   await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
 }
@@ -85,6 +142,19 @@ function getLocalUploadPath(url, moduleName) {
   return path.join(uploadsDir, moduleName, path.basename(url));
 }
 
+async function deleteStoredOrderImage(url) {
+  const localPath = getLocalUploadPath(url, 'orders');
+
+  if (localPath) {
+    await fs.unlink(localPath).catch(() => undefined);
+    return;
+  }
+
+  if (useBlobStorage && typeof url === 'string' && url.includes('.blob.vercel-storage.com/')) {
+    await del(url).catch(() => undefined);
+  }
+}
+
 function assertValidUploadModule(moduleName) {
   if (!allowedUploadModules.has(moduleName)) {
     const error = new Error('Unsupported upload module');
@@ -93,21 +163,27 @@ function assertValidUploadModule(moduleName) {
   }
 }
 
-const storage = multer.diskStorage({
-  destination: (req, _file, cb) => {
-    try {
-      const moduleName = req.params.module;
-      assertValidUploadModule(moduleName);
-      cb(null, path.join(uploadsDir, moduleName));
-    } catch (error) {
-      cb(error);
-    }
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 10)}${ext}`);
-  },
-});
+function createUploadFilename(file) {
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}${ext}`;
+}
+
+const storage = isVercelRuntime || useBlobStorage
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: (req, _file, cb) => {
+        try {
+          const moduleName = req.params.module;
+          assertValidUploadModule(moduleName);
+          cb(null, path.join(uploadsDir, moduleName));
+        } catch (error) {
+          cb(error);
+        }
+      },
+      filename: (_req, file, cb) => {
+        cb(null, createUploadFilename(file));
+      },
+    });
 
 const upload = multer({
   storage,
@@ -295,15 +371,40 @@ app.put('/api/home-settings', async (req, res, next) => {
   }
 });
 
-app.post('/api/uploads/:module', upload.array('images', 8), (req, res, next) => {
+app.post('/api/uploads/:module', upload.array('images', 8), async (req, res, next) => {
   try {
     const moduleName = req.params.module;
     assertValidUploadModule(moduleName);
-    const files = (req.files || []).map((file) => ({
-      filename: file.filename,
-      module: moduleName,
-      url: `/uploads/${moduleName}/${file.filename}`,
-    }));
+
+    if (isVercelRuntime && !useBlobStorage) {
+      res.status(500).json({
+        message: 'Image uploads on Vercel require a linked Vercel Blob store.',
+      });
+      return;
+    }
+
+    const files = useBlobStorage
+      ? await Promise.all(
+          (req.files || []).map(async (file) => {
+            const filename = createUploadFilename(file);
+            const blob = await put(`${blobUploadPrefix}/${moduleName}/${filename}`, file.buffer, {
+              access: 'public',
+              addRandomSuffix: true,
+              contentType: file.mimetype,
+            });
+
+            return {
+              filename: path.basename(blob.pathname),
+              module: moduleName,
+              url: blob.url,
+            };
+          })
+        )
+      : (req.files || []).map((file) => ({
+          filename: file.filename,
+          module: moduleName,
+          url: `/uploads/${moduleName}/${file.filename}`,
+        }));
 
     res.status(201).json({ files });
   } catch (error) {
@@ -429,13 +530,7 @@ app.delete('/api/orders/:id', async (req, res, next) => {
     data.orders = data.orders.filter((item) => item.id !== req.params.id);
     await writeDb(data);
 
-    const localImagePaths = (order.images || [])
-      .map((url) => getLocalUploadPath(url, 'orders'))
-      .filter(Boolean);
-
-    await Promise.all(
-      localImagePaths.map((filePath) => fs.unlink(filePath).catch(() => undefined))
-    );
+    await Promise.all((order.images || []).map((url) => deleteStoredOrderImage(url)));
 
     res.status(204).end();
   } catch (error) {
@@ -450,8 +545,12 @@ app.use((error, _req, res, _next) => {
   });
 });
 
-await ensureRuntimeFiles();
+if (!isVercelRuntime) {
+  await ensureRuntimeFiles();
 
-app.listen(port, () => {
-  console.log(`API server listening on http://localhost:${port}`);
-});
+  app.listen(port, () => {
+    console.log(`API server listening on http://localhost:${port}`);
+  });
+}
+
+export default app;
